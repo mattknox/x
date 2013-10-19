@@ -279,7 +279,14 @@
 
 (deftest reduce ()
   (test-equal 6 (reduce (lambda (a b) (+ a b)) '(1 2 3)))
-  (test-equal '(1 (2 3)) (reduce (lambda (a b) (list a b)) '(1 2 3))))
+  (test-equal '(1 (2 3))
+	      (reduce
+	       (lambda (a b) (list a b))
+	       '(1 2 3)))
+  (test-equal '(1 2 3 4 5)
+	      (reduce
+	       (lambda (a b) (join a b))
+	       '((1) (2 3) (4 5)))))
 
 (deftest type ()
   (test-equal true (string? "abc"))

@@ -21,6 +21,59 @@
 (defun symbol-macro? (form)
   (not (= (get symbol-macros form) nil)))
 
+(defun quoting? (depth) (number? depth))
+(defun quasiquoting? (depth) (and (quoting? depth) (> depth 0)))
+(defun can-unquote? (depth) (and (quoting? depth) (= depth 1)))
+
+(defun macroexpand (form depth)
+  (if ;; expand symbol macro
+      (and (not (quoting? depth))
+	   (symbol-macro? form))
+      (macroexpand (get symbol-macros form))
+      ;; quasiquoting atom
+      (and (atom? form)
+	   (quasiquoting? depth))
+      (list 'quote form)
+      ;; atom
+      (atom? form) form
+      ;; unquote
+      (and (can-unquote? depth)
+	   (= (at form 0) 'unquote))
+      (macroexpand (at form 1))
+      ;; decrease quasiquoting depth
+      (and (quasiquoting? depth)
+	   (not (can-unquote? depth))
+	   (or (= (at form 0) 'unquote)
+	       (= (at form 0) 'unquote-splicing)))
+      (list (at form 0) (macroexpand (at form 1) (- depth 1)))
+      ;; increase quasiquoting depth
+      (and (quasiquoting? depth)
+	   (= (at form 0) 'quasiquote))
+      (list 'quasiquote (macroexpand (at form 1) (+ depth 1)))
+      ;; begin quoting
+      (= (at form 0) 'quote)
+      (list 'quote (at form 1))
+      ;; begin quasiquoting
+      (= (at form 0) 'quasiquote)
+      (macroexpand (at form 1) 1)
+      ;; expand macro
+      (and (not (quoting? depth))
+	   (call? 'macro form))
+      (macroexpand (apply (get macros (at form 0)) (sub form 1)))
+      ;; quasiquoting list
+      (and (quasiquoting? depth)
+	   (can-unquote? depth))
+      (do (local expanded (list ()))
+	  (across (form x)
+	    (if (and (list? x)
+		     (= (at x 0) 'unquote-splicing))
+		(do (push expanded (macroexpand (at x 1)))
+		    (push expanded ()))
+	      (push (last expanded) (macroexpand x depth))))
+	  (reduce (lambda (a b) (list 'join a b)) expanded))
+    ;; list
+    (map (lambda (x) (macroexpand x depth)) form)))
+
 (defun compile-args (forms compile?)
   (local str "(")
   (across (forms x i)
@@ -226,16 +279,6 @@
 	  (cat "for " k "," v " in pairs(" t1 ") do " body1 " end"))
     (do (local body1 (compile-body `((set ,v (get ,t ,k)) ,@body)))
 	(cat "for(" k " in " t1 "){" body1 "}"))))
-
-(defmacro unquote ()
-  (error "UNQUOTE not inside QUASIQUOTE"))
-
-(defmacro unquote-splicing ()
-  (error "UNQUOTE-SPLICING not inside QUASIQUOTE"))
-
-(defun quoting? (depth) (number? depth))
-(defun quasiquoting? (depth) (and (quoting? depth) (> depth 0)))
-(defun can-unquote? (depth) (and (quoting? depth) (= depth 1)))
 
 (defun quote-form (form depth)
   (if (atom? form)
