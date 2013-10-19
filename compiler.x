@@ -70,7 +70,9 @@
 		(do (push expanded (macroexpand (at x 1)))
 		    (push expanded ()))
 	      (push (last expanded) (macroexpand x depth))))
-	  (reduce (lambda (a b) (list 'join a b)) expanded))
+	  (if (= (length expanded) 1)
+	      (join '(list) (at expanded 0))
+	    (reduce (lambda (a b) (list 'join a b)) expanded)))
     ;; list
     (map (lambda (x) (macroexpand x depth)) form)))
 

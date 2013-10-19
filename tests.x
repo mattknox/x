@@ -258,6 +258,7 @@
   (test-equal () (join () ())))
 
 (deftest map ()
+  (test-equal '(1) (map (lambda (x) x) '(1)))
   (test-equal '(2 3 4) (map (lambda (x) (+ x 1)) '(1 2 3))))
 
 (deftest sub ()
