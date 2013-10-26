@@ -26,6 +26,7 @@
 (defun can-unquote? (depth) (and (quoting? depth) (= depth 1)))
 
 (defun macroexpand (form depth)
+  (print (cat "FORM " (to-string form) " DEPTH " (to-string depth)))
   (if ;; expand symbol macro
       (and (not (quoting? depth))
 	   (symbol-macro? form))
@@ -45,11 +46,11 @@
 	   (not (can-unquote? depth))
 	   (or (= (at form 0) 'unquote)
 	       (= (at form 0) 'unquote-splicing)))
-      (list (at form 0) (macroexpand (at form 1) (- depth 1)))
+      (list 'list (at form 0) (macroexpand (at form 1) (- depth 1)))
       ;; increase quasiquoting depth
       (and (quasiquoting? depth)
 	   (= (at form 0) 'quasiquote))
-      (list 'quasiquote (macroexpand (at form 1) (+ depth 1)))
+      (list 'list (macroexpand (at form 1) (+ depth 1)))
       ;; begin quoting
       (= (at form 0) 'quote)
       (list 'quote (at form 1))
@@ -72,7 +73,8 @@
 	      (push (last expanded) (macroexpand x depth))))
 	  (if (= (length expanded) 1)
 	      (join '(list) (at expanded 0))
-	    (reduce (lambda (a b) (list 'join a b)) expanded)))
+	    (list 'join '(list)
+		  (reduce (lambda (a b) (list 'join a b)) expanded))))
     ;; list
     (map (lambda (x) (macroexpand x depth)) form)))
 
