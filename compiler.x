@@ -26,7 +26,7 @@
 (defun can-unquote? (depth) (and (quoting? depth) (= depth 1)))
 
 (defun macroexpand (form depth)
-  (print (cat "FORM " (to-string form) " DEPTH " (to-string depth)))
+  ;; (print (cat "FORM " (to-string form) " DEPTH " (to-string depth)))
   (if ;; expand symbol macro
       (and (not (quoting? depth))
 	   (symbol-macro? form))

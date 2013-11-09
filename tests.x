@@ -136,6 +136,14 @@
   (test-equal 42 (t.f))
   (test-equal 42 ((dot t f))))
 
+(deftest macroexpand ()
+  (test-equal 'a (macroexpand 'a))
+  (test-equal '(17) (macroexpand '(17)))
+  (test-equal '(1 z) (macroexpand '(1 z)))
+  (test-equal '(list '1 'z) (macroexpand '`(1 z)))
+  (test-equal '(list 1 z) (macroexpand '`(,1 ,z)))
+  (test-equal '(join (list) (join (1) (join z ()))) (macroexpand '`(,1 ,@z))))
+
 ;; special forms
 
 (deftest local ()
