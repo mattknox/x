@@ -120,6 +120,9 @@
       (= (length x) 1) (at x 0)
     (f (at x 0) (reduce f (sub x 1)))))
 
+(defmacro join* (xs...)
+  (reduce (lambda (a b) (list 'join1 a b)) xs))
+
 ;; strings
 
 (defun char (str n)

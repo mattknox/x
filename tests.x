@@ -142,7 +142,13 @@
   (test-equal '(1 z) (macroexpand '(1 z)))
   (test-equal '(list '1 'z) (macroexpand '`(1 z)))
   (test-equal '(list 1 z) (macroexpand '`(,1 ,z)))
-  (test-equal '(join (list) (join (1) (join z ()))) (macroexpand '`(,1 ,@z))))
+  (test-equal '(join (list) (join (1) (join z ()))) (macroexpand '`(,1 ,@z)))
+  (test-equal '(quote x) (macroexpand '`x))
+  (test-equal '(quote x) (macroexpand '``x))
+  (test-equal '(quote x) (macroexpand '```x))
+  (test-equal 'x (macroexpand '`,x))
+  (test-equal '(list (quote x)) (macroexpand '``(x)))
+  (test-equal '(list (list 'unquote 'x)) (macroexpand '``(,x))))
 
 ;; special forms
 
