@@ -121,7 +121,7 @@
     (f (at x 0) (reduce f (sub x 1)))))
 
 (defmacro join* (xs...)
-  (reduce (lambda (a b) (list 'join1 a b)) xs))
+  (reduce (lambda (a b) (list 'join a b)) xs))
 
 ;; strings
 
